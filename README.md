@@ -44,14 +44,17 @@ See crytpo_consts_example.h for a setup for AWS IoT and Mosquitto test servers.
 
 ### 1. SNI-Patch installieren
 
-Falls der Patch allein das Problem nicht löst:
+Falls der Patch aus der README siehe oben allein das Problem nicht löst:
 
 Kopiere die Datei `altcp_tls_mbedtls.c` aus diesem Projekt-Folder in deine SDK:
 
-Beispiel-Path (could be different on your device):
+Beispiel-Path (Base of path could be different on your device):
+
 ```bash
 cp altcp_tls_mbedtls.c ~/.pico-sdk/sdk/2.2.0/src/rp2_common/pico_lwip/altcp_tls_mbedtls.c
 ```
+
+important part of path is `/rp2_common/pico_lwip/altcp_tls_mbedtls.c`
 
 ### 2. Konfiguration vorbereiten
 
