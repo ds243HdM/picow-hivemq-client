@@ -27,8 +27,8 @@
 #ifdef CRYPTO_CERT
 const char *cert = CRYPTO_CERT;
 #endif
-#ifdef CRYPTO_CA
-const char *ca = CRYPTO_CA;
+#ifdef HIVE_MQ_CRYPTO_CA
+const char *ca = HIVE_MQ_CRYPTO_CA;
 #endif
 #ifdef CRYPTO_KEY
 const char *key = CRYPTO_KEY;
@@ -171,7 +171,7 @@ err_t mqtt_test_connect(MQTT_CLIENT_T *state) {
 
     struct altcp_tls_config *tls_config;
   
-    #if defined(CRYPTO_CA) && defined(CRYPTO_KEY) && defined(CRYPTO_CERT)
+    #if defined(HIVE_MQ_CRYPTO_CA) && defined(CRYPTO_KEY) && defined(CRYPTO_CERT)
     
     DEBUG_printf("Setting up TLS with 2wayauth (CA + Key + Cert).\n");
     tls_config = altcp_tls_create_config_client_2wayauth(
@@ -185,7 +185,7 @@ err_t mqtt_test_connect(MQTT_CLIENT_T *state) {
     // see mqtt-sni.patch for changes to support this.
     altcp_tls_set_server_name(tls_config, MQTT_SERVER_HOST);
 
-    #elif defined(CRYPTO_CA)
+    #elif defined(HIVE_MQ_CRYPTO_CA)
     DEBUG_printf("Setting up TLS with CA certificate only.\n");
     tls_config = altcp_tls_create_config_client((const u8_t *)ca, 1 + strlen((const char *)ca));
 
@@ -276,7 +276,7 @@ int main() {
 
     DEBUG_printf("\n=== MQTT IoT Client Starting ===\n");
     DEBUG_printf("MQTT Server: %s:%d (TLS: %s)\n", MQTT_SERVER_HOST, MQTT_SERVER_PORT, MQTT_TLS ? "enabled" : "disabled");
-    #ifdef CRYPTO_CA
+    #ifdef HIVE_MQ_CRYPTO_CA
     DEBUG_printf("Crypto Config: CA present\n");
     #endif
     #ifdef CRYPTO_KEY

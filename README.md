@@ -60,7 +60,7 @@ cp crypto_consts.example.h crypto_consts.h
 # - WIFI_SSID und WIFI_PASSWORD
 # - MQTT_USERNAME und MQTT_PASSWORD
 # - MQTT_SERVER_HOST
-# - CRYPTO_CA (dein Root-Zertifikat)
+# - HIVE_MQ_CRYPTO_CA (dein Root-Zertifikat)
 ```
 
 ### 3. Build
