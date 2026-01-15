@@ -20,14 +20,8 @@
 
 #define DEBUG_printf printf
 
-#define MQTT_TLS 1 // needs to be 1 for AWS IoT. Also set published QoS to 0 or 1
-//#define CRYPTO_MOSQUITTO_LOCAL
-//#define CRYPTO_AWS_IOT
-#define HIVE_MQTT_BROKER "dca02463976747a8b0b6c4e8c0ce6aca.s1.eu.hivemq.cloud"
+#define MQTT_TLS 1
 #include "crypto_consts.h"
-
-#define MQTT_USERNAME "enviro_weather"
-#define MQTT_PASSWORD "helloPico26!"
 
 #if MQTT_TLS
 #ifdef CRYPTO_CERT

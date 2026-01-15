@@ -39,3 +39,39 @@ See crytpo_consts_example.h for a setup for AWS IoT and Mosquitto test servers.
 
 ## TODO
 - Support additional configurations that work with background/FreeRTOS 
+
+## ANLEITUNG für Dominik
+
+### 1. SNI-Patch installieren
+
+Kopiere die Datei `altcp_tls_mbedtls.c` aus diesem Projekt in deine SDK:
+
+```bash
+cp altcp_tls_mbedtls.c ~/.pico-sdk/sdk/2.2.0/src/rp2_common/pico_lwip/altcp_tls_mbedtls.c
+```
+
+### 2. Konfiguration vorbereiten
+
+Kopiere die Example-Konfigurationsdatei und fülle sie mit deinen Werten aus:
+
+```bash
+cp crypto_consts.example.h crypto_consts.h
+# Bearbeite crypto_consts.h und ergänze:
+# - WIFI_SSID und WIFI_PASSWORD
+# - MQTT_USERNAME und MQTT_PASSWORD
+# - MQTT_SERVER_HOST
+# - CRYPTO_CA (dein Root-Zertifikat)
+```
+
+### 3. Build
+
+Führe diese Befehle im `build/` Ordner aus:
+
+```bash
+cd build
+rm -rf *
+cmake -DPICO_SDK_PATH=$HOME/.pico-sdk/sdk/2.2.0 -DPICO_BOARD=pico_w ..
+make -j4
+```
+
+Das fertige `.uf2` File findest du in `build/picow_iot.uf2`

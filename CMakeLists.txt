@@ -20,55 +20,41 @@ add_compile_options(-Wall
         -Wno-maybe-uninitialized
         )
 
-set(WIFI_SSID "Vodafone-88E8")
-set(WIFI_PASSWORD "wanye_kest_2026")
-
 if (PICO_CYW43_SUPPORTED) # set by BOARD=pico-w
     if (NOT TARGET pico_cyw43_arch)
         message("Skipping build as support is not available")
     else()
-        set(WIFI_SSID "${WIFI_SSID}" CACHE INTERNAL "WiFi SSID")
-        set(WIFI_PASSWORD "${WIFI_PASSWORD}" CACHE INTERNAL "WiFi password")
+        add_executable(picow_iot
+            picow_iot.c
+        )
 
-        if ("${WIFI_SSID}" STREQUAL "")
-            message("Skipping build as WIFI_SSID is not defined")
-        elseif ("${WIFI_PASSWORD}" STREQUAL "")
-            message("Skipping build as WIFI_PASSWORD is not defined")
-        else()
-            add_executable(picow_iot
-                picow_iot.c
-            )
+        # enable usb output, disable uart output
+        pico_enable_stdio_usb(picow_iot 1)
+        pico_enable_stdio_uart(picow_iot 0)
 
-            # enable usb output, disable uart output
-            pico_enable_stdio_usb(picow_iot 1)
-            pico_enable_stdio_uart(picow_iot 0)
+        target_compile_definitions(picow_iot PRIVATE
+            TEST_TCP_SERVER_IP=\"${TEST_TCP_SERVER_IP}\"
+            NO_SYS=1
+            # ALTCP and TLS Support (Fixes the undefined reference error)
+            LWIP_ALTCP=1
+            LWIP_ALTCP_TLS=1
+            LWIP_ALTCP_TLS_MBEDTLS=1
+        )
 
-            target_compile_definitions(picow_iot PRIVATE
-                WIFI_SSID=\"${WIFI_SSID}\"
-                WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
-                TEST_TCP_SERVER_IP=\"${TEST_TCP_SERVER_IP}\"
-                NO_SYS=1
-                # ALTCP and TLS Support (Fixes the undefined reference error)
-                LWIP_ALTCP=1
-                LWIP_ALTCP_TLS=1
-                LWIP_ALTCP_TLS_MBEDTLS=1
-            )
+        target_include_directories(picow_iot PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}
+            ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts
+        )
 
-            target_include_directories(picow_iot PRIVATE
-                ${CMAKE_CURRENT_LIST_DIR}
-                ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts
-            )
+        target_link_libraries(picow_iot
+            pico_stdlib
+            pico_cyw43_arch_lwip_poll
+            pico_lwip_mqtt
+            pico_lwip_mbedtls    
+            pico_mbedtls
+        )
 
-            target_link_libraries(picow_iot
-                pico_stdlib
-                pico_cyw43_arch_lwip_poll
-                pico_lwip_mqtt
-                pico_lwip_mbedtls    
-                pico_mbedtls
-            )
-
-            pico_add_extra_outputs(picow_iot)
-        endif()
+        pico_add_extra_outputs(picow_iot)
     endif()
 endif()
 
