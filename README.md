@@ -40,19 +40,24 @@ See crytpo_consts_example.h for a setup for AWS IoT and Mosquitto test servers.
 ## TODO
 - Support additional configurations that work with background/FreeRTOS 
 
-## ANLEITUNG für Dominik
+## Extra ANLEITUNG von Dominik
 
 ### 1. SNI-Patch installieren
 
-Kopiere die Datei `altcp_tls_mbedtls.c` aus diesem Projekt in deine SDK:
+Falls der Patch allein das Problem nicht löst:
 
+Kopiere die Datei `altcp_tls_mbedtls.c` aus diesem Projekt-Folder in deine SDK:
+
+Beispiel-Path (could be different on your device):
 ```bash
 cp altcp_tls_mbedtls.c ~/.pico-sdk/sdk/2.2.0/src/rp2_common/pico_lwip/altcp_tls_mbedtls.c
 ```
 
 ### 2. Konfiguration vorbereiten
 
-Kopiere die Example-Konfigurationsdatei und fülle sie mit deinen Werten aus:
+Kopiere die Example-Konfigurationsdatei `crypto_consts.example.h` und fülle sie mit deinen Werten aus:
+
+Deine eigene Datei sollte `crypto_consts.h` heißen.
 
 ```bash
 cp crypto_consts.example.h crypto_consts.h
