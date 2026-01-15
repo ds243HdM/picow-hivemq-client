@@ -62,17 +62,10 @@ Kopiere die Example-Konfigurationsdatei `crypto_consts.example.h` und fülle sie
 
 Deine eigene Datei sollte `crypto_consts.h` heißen.
 
-```bash
-cp crypto_consts.example.h crypto_consts.h
-# Bearbeite crypto_consts.h und ergänze:
-# - WIFI_SSID und WIFI_PASSWORD
-# - MQTT_USERNAME und MQTT_PASSWORD
-# - MQTT_SERVER_HOST
-# - HIVE_MQ_CRYPTO_CA (dein Root-Zertifikat)
-```
 
-Das Hive MQ Crypto CA ist bereits im example, kann aber folgendermaßen generiert werden:
-``openssl s_client -showcerts -connect <TLS MQTT URL (URL:Port)> </dev/null``
+Info: Das Hive MQ Crypto CA ist bereits included im example, kann aber folgendermaßen generiert werden:
+
+``openssl s_client -showcerts -connect <TLS-MQTT-URL(URL:Port)> </dev/null``
 
 ### 3. Build
 
