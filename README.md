@@ -68,6 +68,9 @@ cp crypto_consts.example.h crypto_consts.h
 # - HIVE_MQ_CRYPTO_CA (dein Root-Zertifikat)
 ```
 
+Das Hive MQ Crypto CA ist bereits im example, kann aber folgendermaßen generiert werden:
+``openssl s_client -showcerts -connect <TLS MQTT URL (URL:Port)> </dev/null``
+
 ### 3. Build
 
 Führe diese Befehle im `build/` Ordner aus:
