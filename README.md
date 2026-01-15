@@ -40,7 +40,7 @@ See crytpo_consts_example.h for a setup for AWS IoT and Mosquitto test servers.
 ## TODO
 - Support additional configurations that work with background/FreeRTOS 
 
-## ANLEITUNG für Dominik
+## Extra ANLEITUNG von Dominik
 
 ### 1. SNI-Patch installieren
 
