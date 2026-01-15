@@ -65,7 +65,7 @@
 #define API_MSG_DEBUG               LWIP_DBG_OFF
 #define SOCKETS_DEBUG               LWIP_DBG_OFF
 #define ICMP_DEBUG                  LWIP_DBG_OFF
-#define INET_DEBUG                  LWIP_DBG_OFF
+#define INET_DEBUG                  LWIP_DBG_OFFf
 #define IP_DEBUG                    LWIP_DBG_OFF
 #define IP_REASS_DEBUG              LWIP_DBG_OFF
 #define RAW_DEBUG                   LWIP_DBG_OFF

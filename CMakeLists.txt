@@ -20,6 +20,9 @@ add_compile_options(-Wall
         -Wno-maybe-uninitialized
         )
 
+set(WIFI_SSID "Vodafone-88E8")
+set(WIFI_PASSWORD "wanye_kest_2026")
+
 if (PICO_CYW43_SUPPORTED) # set by BOARD=pico-w
     if (NOT TARGET pico_cyw43_arch)
         message("Skipping build as support is not available")
@@ -37,14 +40,18 @@ if (PICO_CYW43_SUPPORTED) # set by BOARD=pico-w
             )
 
             # enable usb output, disable uart output
-            pico_enable_stdio_usb(picow_iot 0)
-            pico_enable_stdio_uart(picow_iot 1)
+            pico_enable_stdio_usb(picow_iot 1)
+            pico_enable_stdio_uart(picow_iot 0)
 
             target_compile_definitions(picow_iot PRIVATE
-            WIFI_SSID=\"${WIFI_SSID}\"
-            WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
-            TEST_TCP_SERVER_IP=\"${TEST_TCP_SERVER_IP}\"
-            NO_SYS=1
+                WIFI_SSID=\"${WIFI_SSID}\"
+                WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
+                TEST_TCP_SERVER_IP=\"${TEST_TCP_SERVER_IP}\"
+                NO_SYS=1
+                # ALTCP and TLS Support (Fixes the undefined reference error)
+                LWIP_ALTCP=1
+                LWIP_ALTCP_TLS=1
+                LWIP_ALTCP_TLS_MBEDTLS=1
             )
 
             target_include_directories(picow_iot PRIVATE
@@ -53,11 +60,11 @@ if (PICO_CYW43_SUPPORTED) # set by BOARD=pico-w
             )
 
             target_link_libraries(picow_iot
-                pico_cyw43_arch_lwip_poll
                 pico_stdlib
-                pico_lwip_mbedtls
-                pico_mbedtls
+                pico_cyw43_arch_lwip_poll
                 pico_lwip_mqtt
+                pico_lwip_mbedtls    
+                pico_mbedtls
             )
 
             pico_add_extra_outputs(picow_iot)

@@ -22,8 +22,12 @@
 
 #define MQTT_TLS 1 // needs to be 1 for AWS IoT. Also set published QoS to 0 or 1
 //#define CRYPTO_MOSQUITTO_LOCAL
-#define CRYPTO_AWS_IOT
+//#define CRYPTO_AWS_IOT
+#define HIVE_MQTT_BROKER "dca02463976747a8b0b6c4e8c0ce6aca.s1.eu.hivemq.cloud"
 #include "crypto_consts.h"
+
+#define MQTT_USERNAME "enviro_weather"
+#define MQTT_PASSWORD "helloPico26!"
 
 #if MQTT_TLS
 #ifdef CRYPTO_CERT
@@ -65,7 +69,7 @@ void dns_found(const char *name, const ip_addr_t *ipaddr, void *callback_arg) {
 }
 
 void run_dns_lookup(MQTT_CLIENT_T *state) {
-    DEBUG_printf("Running DNS query for %s.\n", MQTT_SERVER_HOST);
+    DEBUG_printf("Starting DNS lookup for MQTT broker: %s\n", MQTT_SERVER_HOST);
 
     cyw43_arch_lwip_begin();
     err_t err = dns_gethostbyname(MQTT_SERVER_HOST, &(state->remote_addr), dns_found, state);
@@ -77,7 +81,7 @@ void run_dns_lookup(MQTT_CLIENT_T *state) {
     }
 
     if (err == ERR_OK) {
-        DEBUG_printf("no lookup needed");
+        DEBUG_printf("DNS lookup completed immediately\n");
         return;
     }
 
@@ -85,6 +89,7 @@ void run_dns_lookup(MQTT_CLIENT_T *state) {
         cyw43_arch_poll();
         sleep_ms(1);
     }
+    DEBUG_printf("DNS resolved to: %s\n", ip4addr_ntoa(&(state->remote_addr)));
 }
 
 u32_t data_in = 0;
@@ -118,9 +123,9 @@ static void mqtt_pub_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
 
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status) {
     if (status != 0) {
-        DEBUG_printf("Error during connection: err %d.\n", status);
+        DEBUG_printf("ERROR: MQTT connection failed with status %d\n", status);
     } else {
-        DEBUG_printf("MQTT connected.\n");
+        DEBUG_printf("SUCCESS: Connected to MQTT broker\n");
     }
 }
 
@@ -160,8 +165,8 @@ err_t mqtt_test_connect(MQTT_CLIENT_T *state) {
     memset(&ci, 0, sizeof(ci));
 
     ci.client_id = "PicoW";
-    ci.client_user = NULL;
-    ci.client_pass = NULL;
+    ci.client_user = MQTT_USERNAME;
+    ci.client_pass = MQTT_PASSWORD;
     ci.keep_alive = 0;
     ci.will_topic = NULL;
     ci.will_msg = NULL;
@@ -174,7 +179,7 @@ err_t mqtt_test_connect(MQTT_CLIENT_T *state) {
   
     #if defined(CRYPTO_CA) && defined(CRYPTO_KEY) && defined(CRYPTO_CERT)
     
-    DEBUG_printf("Setting up TLS with 2wayauth.\n");
+    DEBUG_printf("Setting up TLS with 2wayauth (CA + Key + Cert).\n");
     tls_config = altcp_tls_create_config_client_2wayauth(
         (const u8_t *)ca, 1 + strlen((const char *)ca),
         (const u8_t *)key, 1 + strlen((const char *)key),
@@ -186,13 +191,25 @@ err_t mqtt_test_connect(MQTT_CLIENT_T *state) {
     // see mqtt-sni.patch for changes to support this.
     altcp_tls_set_server_name(tls_config, MQTT_SERVER_HOST);
 
+    #elif defined(CRYPTO_CA)
+    DEBUG_printf("Setting up TLS with CA certificate only.\n");
+    tls_config = altcp_tls_create_config_client((const u8_t *)ca, 1 + strlen((const char *)ca));
+
+    // enable SNI on request
+    // see mqtt-sni.patch for changes to support this.
+    altcp_tls_set_server_name(tls_config, MQTT_SERVER_HOST);
+
     #elif defined(CRYPTO_CERT)
-    DEBUG_printf("Setting up TLS with cert.\n");
+    DEBUG_printf("Setting up TLS with cert only.\n");
     tls_config = altcp_tls_create_config_client((const u8_t *) cert, 1 + strlen((const char *) cert));
 
     // enable SNI on request
     // see mqtt-sni.patch for changes to support this.
     altcp_tls_set_server_name(tls_config, MQTT_SERVER_HOST);
+    #else
+        DEBUG_printf("WARNING: No crypto credentials defined. TLS may fail.\n");
+        tls_config = altcp_tls_create_config_client(NULL, 0);
+        altcp_tls_set_server_name(tls_config, MQTT_SERVER_HOST);
     #endif
 
     if (tls_config == NULL) {
@@ -205,10 +222,13 @@ err_t mqtt_test_connect(MQTT_CLIENT_T *state) {
 
     const struct mqtt_connect_client_info_t *client_info = &ci;
 
+    DEBUG_printf("Connecting to MQTT broker %s:%d...\n", MQTT_SERVER_HOST, MQTT_SERVER_PORT);
     err = mqtt_client_connect(state->mqtt_client, &(state->remote_addr), MQTT_SERVER_PORT, mqtt_connection_cb, state, client_info);
     
     if (err != ERR_OK) {
-        DEBUG_printf("mqtt_connect return %d\n", err);
+        DEBUG_printf("ERROR: mqtt_client_connect failed with code %d\n", err);
+    } else {
+        DEBUG_printf("mqtt_client_connect initiated (err=ERR_OK)\n");
     }
 
     return err;
@@ -260,24 +280,40 @@ void mqtt_run_test(MQTT_CLIENT_T *state) {
 int main() { 
     stdio_init_all();
 
+    DEBUG_printf("\n=== MQTT IoT Client Starting ===\n");
+    DEBUG_printf("MQTT Server: %s:%d (TLS: %s)\n", MQTT_SERVER_HOST, MQTT_SERVER_PORT, MQTT_TLS ? "enabled" : "disabled");
+    #ifdef CRYPTO_CA
+    DEBUG_printf("Crypto Config: CA present\n");
+    #endif
+    #ifdef CRYPTO_KEY
+    DEBUG_printf("Crypto Config: Key present\n");
+    #endif
+    #ifdef CRYPTO_CERT
+    DEBUG_printf("Crypto Config: Cert present\n");
+    #endif
+
     if (cyw43_arch_init()) {
-        DEBUG_printf("failed to initialise\n");
+        DEBUG_printf("ERROR: failed to initialise cyw43\n");
         return 1;
     }
     cyw43_arch_enable_sta_mode();
 
-    DEBUG_printf("Connecting to WiFi...\n");
+    DEBUG_printf("Connecting to WiFi %s...\n", WIFI_SSID);
     if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000)) {
-        DEBUG_printf("failed to  connect.\n");
+        DEBUG_printf("ERROR: WiFi connection failed\n");
         return 1;
     } else {
-        DEBUG_printf("Connected.\n");
+        DEBUG_printf("WiFi: Connected successfully\n");
     }
 
     MQTT_CLIENT_T *state = mqtt_client_init();
+    if (!state) {
+        DEBUG_printf("ERROR: Failed to initialize MQTT client\n");
+        return 1;
+    }
      
     run_dns_lookup(state);
- 
+    DEBUG_printf("Starting MQTT connection sequence...\n");
     mqtt_run_test(state);
 
     cyw43_arch_deinit();
