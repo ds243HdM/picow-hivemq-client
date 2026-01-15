@@ -10,9 +10,6 @@
 #define MQTT_PASSWORD ""
 #define MQTT_SERVER_HOST ""
 #define MQTT_SERVER_PORT 8883
-
-// Hive MQTT Broker
-#ifdef HIVE_MQTT_BROKER
 #define HIVE_MQ_CRYPTO_CA \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\n" \
@@ -45,6 +42,4 @@
 "mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d\n" \
 "emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=\n" \
 "-----END CERTIFICATE-----"
-#endif
-
 #endif
